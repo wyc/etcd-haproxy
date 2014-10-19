@@ -1,0 +1,26 @@
+global
+        chroot /var/lib/haproxy
+        user haproxy
+        group haproxy
+        daemon
+
+        ca-base /etc/ssl/certs
+        crt-base /etc/ssl/private
+
+        ssl-default-bind-ciphers kEECDH+aRSA+AES:kRSA+AES:+AES256:RC4-SHA:!kEDH:!LOW:!EXP:!MD5:!aNULL:!eNULL
+
+defaults
+        mode    http
+        timeout connect 5000
+        timeout client  50000
+        timeout server  50000
+
+frontend http-in
+        bind *:80
+        
+{{acl}}
+
+{{use_backend}}
+
+{{backend}}
+

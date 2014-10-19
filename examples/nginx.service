@@ -1,0 +1,19 @@
+[Unit]
+Description=the nginx http server
+After=docker.service
+Requires=docker.service
+Requires=etcd-haproxy.service
+
+[Service]
+TimeoutStartSec=0
+Environment="VHOST=grad.wycd.net" "NAME=nginx"
+ExecStartPre=-/usr/bin/docker kill ${NAME}
+ExecStartPre=-/usr/bin/docker rm ${NAME}
+ExecStartPre=/usr/bin/docker pull dockerfile/nginx
+ExecStart=/usr/bin/docker run --name ${NAME} -P dockerfile/nginx
+ExecStartPost=/bin/sh -c "sleep 3; /etc/systemd/system/vhost.sh register ${VHOST} ${NAME}"
+ExecStop=/etc/systemd/system/vhost.sh deregister ${VHOST} ${NAME}
+ExecStop=/usr/bin/docker stop ${NAME}
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,19 @@
+[Unit]
+Description=An example systemd unit file for a ghost blog container
+After=docker.service
+Requires=docker.service
+Requires=etcd-haproxy.service
+
+[Service]
+TimeoutStartSec=0
+Environment="VHOST=ghost.example.com" "NAME=ghost" "DATA=/data/ghost"
+ExecStartPre=-/usr/bin/docker kill ${NAME}
+ExecStartPre=-/usr/bin/docker rm ${NAME}
+ExecStartPre=/usr/bin/docker pull dockerfile/ghost
+ExecStart=/usr/bin/docker run --name ${NAME} -P -v ${DATA}:/ghost-override dockerfile/ghost
+ExecStartPost=/bin/sh -c "sleep 3; /etc/systemd/system/vhost.sh register ${VHOST} ${NAME}"
+ExecStop=/etc/systemd/system/vhost.sh deregister ${VHOST} ${NAME}
+ExecStop=/usr/bin/docker stop ${NAME}
+
+[Install]
+WantedBy=multi-user.target

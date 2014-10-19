@@ -1,0 +1,16 @@
+[Unit]
+Description=dynamic vhost routing
+After=docker.service
+Requires=docker.service
+
+[Service]
+TimeoutStartSec=0
+Environment="NAME=etcd-haproxy"
+ExecStartPre=-/usr/bin/docker kill ${NAME}
+ExecStartPre=-/usr/bin/docker rm ${NAME}
+ExecStartPre=/usr/bin/docker pull dockerfile/ghost
+ExecStart=/usr/bin/docker run -p 80:80 --name ${NAME} etcd-haproxy
+ExecStop=/usr/bin/docker stop ${NAME}
+
+[Install]
+WantedBy=multi-user.target
